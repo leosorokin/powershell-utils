@@ -1,6 +1,6 @@
 <#
 Script: Deletes/clean all boot diagnostics storage containers from the specified storage account
-Author: Leo Sorokin - Microsoft
+Author: Leo Sorokin
 Date: June 13, 2017
 Version: 1.0
 References:
