@@ -1,6 +1,6 @@
 <#
 Script: Deletes/clean all boot diagnostics storage containers from the specified storage account
-Author: Leonid Sorokin - Microsoft
+Author: Leo Sorokin - Microsoft
 Date: June 13, 2017
 Version: 1.0
 References:
@@ -22,10 +22,10 @@ OF THIS CODE OR INFORMATION.
 
 workflow delete-bootdiagnosticsstoragecontainers
 {
-    Param
+	Param
     (
 		[Parameter(mandatory=$true)]
-        [String] $ResourceGroupName,
+		[String] $ResourceGroupName,
 		[Parameter(mandatory=$true)]
 		[String] $StorageAccountName
     )
@@ -37,13 +37,13 @@ workflow delete-bootdiagnosticsstoragecontainers
 
     Select-AzureRmSubscription -SubscriptionId $SubscriptionId
 
-	$StorageAccountKey = Get-AzureRmStorageAccountKey -Name $StorageAccountName -ResourceGroupName $ResourceGroupName
+    $StorageAccountKey = Get-AzureRmStorageAccountKey -Name $StorageAccountName -ResourceGroupName $ResourceGroupName
 
-	$StorageContainers = Get-AzureStorageContainer -Context (New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccountKey[0].Value)
+    $StorageContainers = Get-AzureStorageContainer -Context (New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccountKey[0].Value)
 
-	$DiagnosticsStorageContainerPattern = "^bootdiagnostics-"
+    $DiagnosticsStorageContainerPattern = "^bootdiagnostics-"
 
-	# Loop over and delete all diagnostic storage containers
+    # Loop over and delete all diagnostic storage containers
     ForEach -Parallel ($StorageContainer in $StorageContainers)
     {
 		if ($StorageContainer.Name -match $DiagnosticsStorageContainerPattern)
