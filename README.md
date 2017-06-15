@@ -1,3 +1,4 @@
 # powershell-utils
 This repository contains useful PowerShell scripts.
-Folders in the repostory specify the use-cases for the PowerShell scripts.
+
+Folders in the repostory specify the use-cases for the PowerShell scripts (i.e. how the PowerShell scripts are to be used)
