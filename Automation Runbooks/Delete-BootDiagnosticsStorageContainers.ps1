@@ -24,22 +24,41 @@ workflow delete-bootdiagnosticsstoragecontainers
 {
 	Param
 	(
+		[Parameter(mandatory=$false)]
+		[String] $ConnectionName = 'AzureRunAsConnection',
 		[Parameter(mandatory=$true)]
 		[String] $ResourceGroupName,
 		[Parameter(mandatory=$true)]
 		[String] $StorageAccountName
 	)
 
-	$Conn = Get-AutomationConnection -Name AzureRunAsConnection
-	Add-AzureRMAccount -ServicePrincipal -Tenant $Conn.TenantID -ApplicationId $Conn.ApplicationID -CertificateThumbprint $Conn.CertificateThumbprint
+	try
+	{
+		$servicePrincipalConnection = Get-AutomationConnection -Name $ConnectionName
 
-	$SubscriptionId = "***Enter Subscription GUID Here***" # Note: UPDATE/CHANGE subscription ID!
+		Add-AzureRMAccount `
+			-ServicePrincipal `
+			-Tenant $servicePrincipalConnection.TenantID `
+			-ApplicationId $servicePrincipalConnection.ApplicationID `
+			-CertificateThumbprint $servicePrincipalConnection.CertificateThumbprint
+	}
+	catch {
+		if (!$servicePrincipalConnection)
+		{
+			$ErrorMessage = "Connection $connectionName not found."
+			throw $ErrorMessage
+		} else {
+			Write-Error -Message $_.Exception
+			throw $_.Exception
+		}
+	}
 
-	Select-AzureRmSubscription -SubscriptionId $SubscriptionId
+	Select-AzureRmSubscription -SubscriptionId $servicePrincipalConnection.SubscriptionId
 
 	$StorageAccountKey = Get-AzureRmStorageAccountKey -Name $StorageAccountName -ResourceGroupName $ResourceGroupName
 
-	$StorageContainers = Get-AzureStorageContainer -Context (New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccountKey[0].Value)
+	$StorageContainers = Get-AzureStorageContainer `
+		-Context (New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccountKey[0].Value)
 
 	$DiagnosticsStorageContainerPattern = "^bootdiagnostics-"
 
@@ -49,7 +68,11 @@ workflow delete-bootdiagnosticsstoragecontainers
 		if ($StorageContainer.Name -match $DiagnosticsStorageContainerPattern)
 		{
 			Write-Output "Deleting: $($StorageContainer.Name)"
-			Remove-AzureStorageContainer -Name $StorageContainer.Name -Context (New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccountKey[0].Value) -Force -Verbose
+			Remove-AzureStorageContainer `
+				-Name $StorageContainer.Name `
+				-Context (New-AzureStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccountKey[0].Value) `
+				-Force `
+				-Verbose
 		}
 	}
 }
