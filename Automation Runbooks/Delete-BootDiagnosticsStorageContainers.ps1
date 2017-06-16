@@ -45,7 +45,7 @@ workflow delete-bootdiagnosticsstoragecontainers
 	catch {
 		if (!$servicePrincipalConnection)
 		{
-			$ErrorMessage = "Connection $connectionName not found."
+			$ErrorMessage = "Connection $ConnectionName not found."
 			throw $ErrorMessage
 		} else {
 			Write-Error -Message $_.Exception
